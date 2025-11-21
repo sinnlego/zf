@@ -4,16 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>管理后台 - 快手转发工具</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary: #ff6b6b;
             --secondary: #4ecdc4;
+            --accent: #ff9f43;
             --dark: #2f3542;
             --light: #f1f2f6;
             --gray: #a4b0be;
             --success: #2ed573;
             --warning: #ffa502;
             --error: #ff4757;
+            --card-bg: rgba(255, 255, 255, 0.1);
+            --card-border: rgba(255, 255, 255, 0.2);
         }
         
         * {
@@ -35,18 +39,20 @@
             max-width: 1200px;
             margin: 0 auto;
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
+            border-radius: 20px;
             padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
             backdrop-filter: blur(10px);
             display: none;
+            border: 1px solid var(--card-border);
+            animation: fadeIn 0.8s ease-out;
         }
         
         .header {
             text-align: center;
             margin-bottom: 30px;
             padding-bottom: 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid var(--card-border);
         }
         
         .header h1 {
@@ -71,16 +77,27 @@
         }
         
         .panel {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
+            background: var(--card-bg);
+            border-radius: 15px;
             padding: 20px;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        
+        .panel:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
         }
         
         .panel h2 {
             margin-bottom: 15px;
             color: var(--secondary);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid var(--card-border);
             padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
         .input-group {
@@ -97,15 +114,22 @@
             width: 100%;
             padding: 12px;
             border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border: 1px solid var(--card-border);
             background: rgba(255, 255, 255, 0.1);
             color: white;
             font-size: 16px;
+            transition: all 0.3s;
         }
         
         textarea {
             min-height: 100px;
             resize: vertical;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(255, 107, 107, 0.2);
         }
         
         input::placeholder, textarea::placeholder {
@@ -133,18 +157,23 @@
             border-radius: 8px;
             font-weight: bold;
             cursor: pointer;
-            transition: 0.3s;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
         
         .primary-btn {
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary), #ff5252);
             color: white;
         }
         
         .primary-btn:hover:not(:disabled) {
             background: #ff5252;
             transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
         }
         
         .primary-btn:disabled {
@@ -155,11 +184,21 @@
         .secondary-btn {
             background: rgba(255, 255, 255, 0.1);
             color: var(--light);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid var(--card-border);
         }
         
         .secondary-btn:hover:not(:disabled) {
             background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .accent-btn {
+            background: linear-gradient(135deg, var(--accent), #ff7e00);
+            color: white;
+        }
+        
+        .accent-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 159, 67, 0.4);
         }
         
         .keys-list {
@@ -169,6 +208,9 @@
         .keys-list h3 {
             margin-bottom: 10px;
             color: var(--secondary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
         .keys-container {
@@ -177,6 +219,7 @@
             background: rgba(0, 0, 0, 0.2);
             border-radius: 8px;
             padding: 15px;
+            border: 1px solid var(--card-border);
         }
         
         .key-item {
@@ -184,7 +227,12 @@
             justify-content: space-between;
             align-items: center;
             padding: 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid var(--card-border);
+            transition: background 0.3s;
+        }
+        
+        .key-item:hover {
+            background: rgba(255, 255, 255, 0.05);
         }
         
         .key-item:last-child {
@@ -215,6 +263,7 @@
             color: white;
             padding: 5px 10px;
             font-size: 12px;
+            border-radius: 5px;
         }
         
         .system-info {
@@ -224,6 +273,9 @@
         .system-info h3 {
             margin-bottom: 10px;
             color: var(--secondary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
         .info-item {
@@ -231,7 +283,7 @@
             justify-content: space-between;
             margin-bottom: 10px;
             padding: 8px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid var(--card-border);
         }
         
         .info-item:last-child {
@@ -269,7 +321,7 @@
         
         .tabs {
             display: flex;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid var(--card-border);
             margin-bottom: 20px;
         }
         
@@ -278,6 +330,9 @@
             cursor: pointer;
             border-bottom: 3px solid transparent;
             transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .tab.active {
@@ -287,6 +342,7 @@
         
         .tab-content {
             display: none;
+            animation: fadeIn 0.5s ease-in-out;
         }
         
         .tab-content.active {
@@ -301,10 +357,17 @@
         }
         
         .stat-card {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
+            background: var(--card-bg);
+            border-radius: 15px;
             padding: 15px;
             text-align: center;
+            border: 1px solid var(--card-border);
+            transition: all 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
         }
         
         .stat-value {
@@ -334,27 +397,49 @@
         
         .modal-content {
             background: linear-gradient(135deg, #1e3c72, #2a5298);
-            border-radius: 15px;
+            border-radius: 20px;
             width: 90%;
             max-width: 400px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
             overflow: hidden;
+            border: 1px solid var(--card-border);
+            animation: modalAppear 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
         
         .modal-header {
             padding: 20px;
             background: rgba(0, 0, 0, 0.3);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid var(--card-border);
             text-align: center;
         }
         
         .modal-header h2 {
             color: var(--secondary);
             margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
         
         .modal-body {
             padding: 20px;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes modalAppear {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
         }
         
         @media (max-width: 768px) {
@@ -376,15 +461,13 @@
             }
         }
     </style>
-    <!-- 引入Supabase客户端 -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <!-- 管理员登录 -->
     <div id="adminLoginModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>管理员登录</h2>
+                <h2><i class="fas fa-lock"></i> 管理员登录</h2>
             </div>
             <div class="modal-body">
                 <div class="input-group">
@@ -392,7 +475,7 @@
                     <input type="password" id="adminPassword" placeholder="请输入管理员密码">
                 </div>
                 <div class="button-group">
-                    <button id="adminLoginBtn" class="primary-btn">登录</button>
+                    <button id="adminLoginBtn" class="primary-btn"><i class="fas fa-sign-in-alt"></i> 登录</button>
                 </div>
                 <div id="adminLoginMessage" class="message"></div>
             </div>
@@ -404,13 +487,13 @@
         <div class="header">
             <h1>快手转发工具 - 管理后台</h1>
             <p>卡密与系统管理</p>
-            <button id="logoutBtn" class="secondary-btn">退出登录</button>
+            <button id="logoutBtn" class="secondary-btn"><i class="fas fa-sign-out-alt"></i> 退出登录</button>
         </div>
         
         <div class="tabs">
-            <div class="tab active" data-tab="dashboard">数据看板</div>
-            <div class="tab" data-tab="keys">卡密管理</div>
-            <div class="tab" data-tab="system">系统设置</div>
+            <div class="tab active" data-tab="dashboard"><i class="fas fa-tachometer-alt"></i> 数据看板</div>
+            <div class="tab" data-tab="keys"><i class="fas fa-key"></i> 卡密管理</div>
+            <div class="tab" data-tab="system"><i class="fas fa-cog"></i> 系统设置</div>
         </div>
         
         <div class="content">
@@ -436,9 +519,10 @@
                 </div>
                 
                 <div class="panel">
-                    <h2>近期使用记录</h2>
+                    <h2><i class="fas fa-history"></i> 近期使用记录</h2>
                     <div class="keys-container" id="recentUsageContainer">
                         <!-- 近期使用记录将在这里显示 -->
+                        <div style="text-align: center; padding: 20px; color: var(--gray);">暂无使用记录</div>
                     </div>
                 </div>
             </div>
@@ -447,7 +531,7 @@
             <div class="tab-content" id="keys-tab">
                 <div class="dashboard">
                     <div class="panel">
-                        <h2>卡密创建</h2>
+                        <h2><i class="fas fa-plus-circle"></i> 卡密创建</h2>
                         <div class="input-group">
                             <label for="keyValue">卡密内容</label>
                             <input type="text" id="keyValue" placeholder="输入卡密内容">
@@ -456,17 +540,26 @@
                         <div class="input-row">
                             <div class="input-group">
                                 <label for="keyDays">有效天数</label>
-                                <input type="number" id="keyDays" value="30" min="1" max="365">
+                                <input type="number" id="keyDays" value="0" min="0" max="365">
                             </div>
                             <div class="input-group">
-                                <label for="keyUsageCount">使用次数</label>
-                                <input type="number" id="keyUsageCount" value="1000" min="1" max="10000">
+                                <label for="keyHours">有效小时</label>
+                                <input type="number" id="keyHours" value="1" min="0" max="23">
+                            </div>
+                            <div class="input-group">
+                                <label for="keyMinutes">有效分钟</label>
+                                <input type="number" id="keyMinutes" value="0" min="0" max="59">
                             </div>
                         </div>
                         
+                        <div class="input-group">
+                            <label for="keyUsageCount">使用次数</label>
+                            <input type="number" id="keyUsageCount" value="1000" min="1" max="10000">
+                        </div>
+                        
                         <div class="button-group">
-                            <button id="generateKeyBtn" class="primary-btn">生成卡密</button>
-                            <button id="generateRandomKeysBtn" class="secondary-btn">批量生成随机卡密</button>
+                            <button id="generateKeyBtn" class="primary-btn"><i class="fas fa-key"></i> 生成卡密</button>
+                            <button id="generateRandomKeysBtn" class="accent-btn"><i class="fas fa-random"></i> 批量生成随机卡密</button>
                         </div>
                         
                         <div class="input-group">
@@ -481,15 +574,15 @@
                     </div>
                     
                     <div class="panel">
-                        <h2>卡密操作</h2>
+                        <h2><i class="fas fa-tasks"></i> 卡密操作</h2>
                         <div class="input-group">
                             <label for="searchKey">查询卡密</label>
                             <input type="text" id="searchKey" placeholder="输入卡密进行查询">
                         </div>
                         
                         <div class="button-group">
-                            <button id="searchKeyBtn" class="primary-btn">查询</button>
-                            <button id="exportKeysBtn" class="secondary-btn">导出卡密</button>
+                            <button id="searchKeyBtn" class="primary-btn"><i class="fas fa-search"></i> 查询</button>
+                            <button id="exportKeysBtn" class="secondary-btn"><i class="fas fa-download"></i> 导出卡密</button>
                         </div>
                         
                         <div class="input-group">
@@ -503,16 +596,17 @@
                         </div>
                         
                         <div class="button-group">
-                            <button id="deleteExpiredBtn" class="secondary-btn">删除已过期卡密</button>
-                            <button id="clearUsedBtn" class="secondary-btn">清理已使用卡密</button>
+                            <button id="deleteExpiredBtn" class="secondary-btn"><i class="fas fa-trash"></i> 删除已过期卡密</button>
+                            <button id="clearUsedBtn" class="secondary-btn"><i class="fas fa-broom"></i> 清理已使用卡密</button>
                         </div>
                     </div>
                 </div>
                 
                 <div class="keys-list">
-                    <h3>卡密列表</h3>
+                    <h3><i class="fas fa-list"></i> 卡密列表</h3>
                     <div class="keys-container" id="keysContainer">
                         <!-- 卡密列表将在这里显示 -->
+                        <div style="text-align: center; padding: 20px; color: var(--gray);">暂无卡密</div>
                     </div>
                 </div>
             </div>
@@ -521,7 +615,7 @@
             <div class="tab-content" id="system-tab">
                 <div class="dashboard">
                     <div class="panel">
-                        <h2>系统公告</h2>
+                        <h2><i class="fas fa-bullhorn"></i> 系统公告</h2>
                         
                         <div class="input-group">
                             <label for="announcementContent">公告内容</label>
@@ -529,21 +623,21 @@
                         </div>
                         
                         <div class="button-group">
-                            <button id="saveAnnouncementBtn" class="primary-btn">保存公告</button>
+                            <button id="saveAnnouncementBtn" class="primary-btn"><i class="fas fa-save"></i> 保存公告</button>
                         </div>
                     </div>
                     
                     <div class="panel">
-                        <h2>系统信息</h2>
+                        <h2><i class="fas fa-info-circle"></i> 系统信息</h2>
                         
                         <div class="system-info">
                             <div class="info-item">
                                 <span class="label">系统版本:</span>
-                                <span class="value">2.0</span>
+                                <span class="value">2.1</span>
                             </div>
                             <div class="info-item">
                                 <span class="label">数据库连接:</span>
-                                <span class="value" id="dbStatus">未知</span>
+                                <span class="value" id="dbStatus">正常</span>
                             </div>
                             <div class="info-item">
                                 <span class="label">最后更新:</span>
@@ -552,8 +646,8 @@
                         </div>
                         
                         <div class="button-group">
-                            <button id="refreshStatsBtn" class="secondary-btn">刷新统计</button>
-                            <button id="backupDataBtn" class="secondary-btn">备份数据</button>
+                            <button id="refreshStatsBtn" class="secondary-btn"><i class="fas fa-sync"></i> 刷新统计</button>
+                            <button id="backupDataBtn" class="secondary-btn"><i class="fas fa-database"></i> 备份数据</button>
                         </div>
                     </div>
                 </div>
@@ -561,7 +655,6 @@
         </div>
     </div>
 
-    <script src="supabase-config.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // 元素引用
@@ -587,6 +680,8 @@
             // 卡密管理元素
             const keyValueInput = document.getElementById('keyValue');
             const keyDaysInput = document.getElementById('keyDays');
+            const keyHoursInput = document.getElementById('keyHours');
+            const keyMinutesInput = document.getElementById('keyMinutes');
             const keyUsageCountInput = document.getElementById('keyUsageCount');
             const generateKeyBtn = document.getElementById('generateKeyBtn');
             const generateRandomKeysBtn = document.getElementById('generateRandomKeysBtn');
@@ -609,17 +704,63 @@
             // 管理员密码
             const ADMIN_PASSWORD = '5418854188';
             
+            // 数据库
+            let keysDatabase = [];
+            let announcementsDatabase = [];
+            let usageLogs = [];
+            
             // 初始化
             function init() {
+                console.log('初始化管理员后台...');
+                
                 // 显示管理员登录弹窗
                 adminLoginModal.style.display = 'flex';
                 adminContainer.style.display = 'none';
                 
+                // 加载数据
+                loadData();
+                
                 // 设置标签切换
                 setupTabs();
                 
-                // 测试数据库连接
-                testDatabaseConnection();
+                // 设置事件监听器
+                setupEventListeners();
+                
+                console.log('管理员后台初始化完成');
+            }
+            
+            // 加载数据
+            function loadData() {
+                try {
+                    keysDatabase = JSON.parse(localStorage.getItem('keysDatabase') || '[]');
+                    announcementsDatabase = JSON.parse(localStorage.getItem('announcementsDatabase') || '[]');
+                    usageLogs = JSON.parse(localStorage.getItem('usageLogs') || '[]');
+                    
+                    console.log('数据加载成功:', {
+                        keys: keysDatabase.length,
+                        announcements: announcementsDatabase.length,
+                        logs: usageLogs.length
+                    });
+                } catch (e) {
+                    console.error('加载数据失败:', e);
+                    // 初始化空数据
+                    keysDatabase = [];
+                    announcementsDatabase = [];
+                    usageLogs = [];
+                }
+            }
+            
+            // 保存数据
+            function saveData() {
+                try {
+                    localStorage.setItem('keysDatabase', JSON.stringify(keysDatabase));
+                    localStorage.setItem('announcementsDatabase', JSON.stringify(announcementsDatabase));
+                    localStorage.setItem('usageLogs', JSON.stringify(usageLogs));
+                    console.log('数据保存成功');
+                } catch (e) {
+                    console.error('保存数据失败:', e);
+                    showMessage('保存数据失败', 'error');
+                }
             }
             
             // 设置标签切换
@@ -649,112 +790,105 @@
                 });
             }
             
-            // 测试数据库连接
-            async function testDatabaseConnection() {
-                try {
-                    const { data, error } = await supabase
-                        .from(TABLES.CARDS)
-                        .select('count')
-                        .limit(1);
+            // 设置事件监听器
+            function setupEventListeners() {
+                // 管理员登录
+                adminLoginBtn.addEventListener('click', function() {
+                    const password = adminPassword.value.trim();
                     
-                    if (error) throw error;
+                    if (!password) {
+                        showMessage('请输入管理员密码', 'error');
+                        return;
+                    }
                     
-                    dbStatusSpan.textContent = '正常';
-                    dbStatusSpan.style.color = 'var(--success)';
-                } catch (error) {
-                    console.error('数据库连接失败:', error);
-                    dbStatusSpan.textContent = '失败';
-                    dbStatusSpan.style.color = 'var(--error)';
-                }
-            }
-            
-            // 管理员登录
-            adminLoginBtn.addEventListener('click', function() {
-                const password = adminPassword.value.trim();
+                    if (password === ADMIN_PASSWORD) {
+                        // 登录成功
+                        adminLoginModal.style.display = 'none';
+                        adminContainer.style.display = 'block';
+                        
+                        // 加载初始数据
+                        loadDashboardStats();
+                        loadAnnouncement();
+                        
+                        showMessage('登录成功', 'success');
+                    } else {
+                        showMessage('密码错误', 'error');
+                    }
+                });
                 
-                if (!password) {
-                    showMessage('请输入管理员密码', 'error');
-                    return;
-                }
+                // 退出登录
+                logoutBtn.addEventListener('click', function() {
+                    adminContainer.style.display = 'none';
+                    adminLoginModal.style.display = 'flex';
+                    adminPassword.value = '';
+                });
                 
-                if (password === ADMIN_PASSWORD) {
-                    // 登录成功
-                    adminLoginModal.style.display = 'none';
-                    adminContainer.style.display = 'block';
+                // 生成卡密
+                generateKeyBtn.addEventListener('click', function() {
+                    const keyValue = keyValueInput.value.trim();
+                    const keyDays = parseInt(keyDaysInput.value);
+                    const keyHours = parseInt(keyHoursInput.value);
+                    const keyMinutes = parseInt(keyMinutesInput.value);
+                    const usageCount = parseInt(keyUsageCountInput.value);
                     
-                    // 加载初始数据
-                    loadDashboardStats();
-                    loadAnnouncement();
-                } else {
-                    showMessage('密码错误', 'error');
-                }
-            });
-            
-            // 退出登录
-            logoutBtn.addEventListener('click', function() {
-                adminContainer.style.display = 'none';
-                adminLoginModal.style.display = 'flex';
-                adminPassword.value = '';
-            });
-            
-            // 生成卡密
-            generateKeyBtn.addEventListener('click', async function() {
-                const keyValue = keyValueInput.value.trim();
-                const keyDays = parseInt(keyDaysInput.value);
-                const usageCount = parseInt(keyUsageCountInput.value);
-                
-                if (!keyValue) {
-                    showMessage('请输入卡密内容', 'error');
-                    return;
-                }
-                
-                if (isNaN(keyDays) || keyDays <= 0) {
-                    showMessage('有效天数必须是大于0的整数', 'error');
-                    return;
-                }
-                
-                if (isNaN(usageCount) || usageCount <= 0) {
-                    showMessage('使用次数必须是大于0的整数', 'error');
-                    return;
-                }
-                
-                // 检查卡密是否已存在
-                try {
-                    const { data: existingKey, error } = await supabase
-                        .from(TABLES.CARDS)
-                        .select('*')
-                        .eq('key', keyValue)
-                        .single();
+                    if (!keyValue) {
+                        showMessage('请输入卡密内容', 'error');
+                        return;
+                    }
                     
+                    if (isNaN(keyDays) || keyDays < 0) {
+                        showMessage('有效天数必须是非负整数', 'error');
+                        return;
+                    }
+                    
+                    if (isNaN(keyHours) || keyHours < 0 || keyHours > 23) {
+                        showMessage('有效小时必须是0-23的整数', 'error');
+                        return;
+                    }
+                    
+                    if (isNaN(keyMinutes) || keyMinutes < 0 || keyMinutes > 59) {
+                        showMessage('有效分钟必须是0-59的整数', 'error');
+                        return;
+                    }
+                    
+                    if (keyDays === 0 && keyHours === 0 && keyMinutes === 0) {
+                        showMessage('有效期必须大于0', 'error');
+                        return;
+                    }
+                    
+                    if (isNaN(usageCount) || usageCount <= 0) {
+                        showMessage('使用次数必须是大于0的整数', 'error');
+                        return;
+                    }
+                    
+                    // 检查卡密是否已存在
+                    const existingKey = keysDatabase.find(k => k.key === keyValue);
                     if (existingKey) {
                         showMessage('卡密已存在，请使用其他内容', 'error');
                         return;
                     }
-                } catch (error) {
-                    // 卡密不存在，继续创建
-                }
-                
-                // 计算到期日期
-                const expiryDate = new Date();
-                expiryDate.setDate(expiryDate.getDate() + keyDays);
-                
-                // 创建卡密对象
-                const key = {
-                    key: keyValue,
-                    expires_at: expiryDate.toISOString(),
-                    remaining_uses: usageCount,
-                    total_uses: usageCount,
-                    status: KEY_STATUS.ACTIVE,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString()
-                };
-                
-                try {
-                    const { data, error } = await supabase
-                        .from(TABLES.CARDS)
-                        .insert([key]);
                     
-                    if (error) throw error;
+                    // 计算到期日期
+                    const expiryDate = new Date();
+                    expiryDate.setDate(expiryDate.getDate() + keyDays);
+                    expiryDate.setHours(expiryDate.getHours() + keyHours);
+                    expiryDate.setMinutes(expiryDate.getMinutes() + keyMinutes);
+                    
+                    // 创建卡密对象
+                    const key = {
+                        id: Date.now().toString(),
+                        key: keyValue,
+                        expiresAt: expiryDate.toISOString(),
+                        remainingUses: usageCount,
+                        totalUses: usageCount,
+                        status: 'active',
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString()
+                    };
+                    
+                    // 保存到数据库
+                    keysDatabase.push(key);
+                    saveData();
                     
                     // 清空输入框
                     keyValueInput.value = '';
@@ -764,244 +898,199 @@
                     loadDashboardStats();
                     
                     showMessage('卡密生成成功', 'success');
-                } catch (error) {
-                    console.error('生成卡密失败:', error);
-                    showMessage('生成卡密失败: ' + error.message, 'error');
-                }
-            });
-            
-            // 批量生成随机卡密
-            generateRandomKeysBtn.addEventListener('click', async function() {
-                const count = parseInt(randomKeyCountInput.value);
-                const length = parseInt(randomKeyLengthInput.value);
+                });
                 
-                if (isNaN(count) || count <= 0) {
-                    showMessage('生成数量必须是大于0的整数', 'error');
-                    return;
-                }
-                
-                if (isNaN(length) || length < 4) {
-                    showMessage('卡密长度必须至少为4位', 'error');
-                    return;
-                }
-                
-                const keyDays = parseInt(keyDaysInput.value);
-                const usageCount = parseInt(keyUsageCountInput.value);
-                
-                // 计算到期日期
-                const expiryDate = new Date();
-                expiryDate.setDate(expiryDate.getDate() + keyDays);
-                
-                // 生成随机卡密
-                const keys = [];
-                for (let i = 0; i < count; i++) {
-                    const randomKey = generateRandomKey(length);
-                    keys.push({
-                        key: randomKey,
-                        expires_at: expiryDate.toISOString(),
-                        remaining_uses: usageCount,
-                        total_uses: usageCount,
-                        status: KEY_STATUS.ACTIVE,
-                        created_at: new Date().toISOString(),
-                        updated_at: new Date().toISOString()
-                    });
-                }
-                
-                try {
-                    const { data, error } = await supabase
-                        .from(TABLES.CARDS)
-                        .insert(keys);
+                // 批量生成随机卡密
+                generateRandomKeysBtn.addEventListener('click', function() {
+                    const count = parseInt(randomKeyCountInput.value);
+                    const length = parseInt(randomKeyLengthInput.value);
                     
-                    if (error) throw error;
+                    if (isNaN(count) || count <= 0) {
+                        showMessage('生成数量必须是大于0的整数', 'error');
+                        return;
+                    }
+                    
+                    if (isNaN(length) || length < 4) {
+                        showMessage('卡密长度必须至少为4位', 'error');
+                        return;
+                    }
+                    
+                    const keyDays = parseInt(keyDaysInput.value);
+                    const keyHours = parseInt(keyHoursInput.value);
+                    const keyMinutes = parseInt(keyMinutesInput.value);
+                    const usageCount = parseInt(keyUsageCountInput.value);
+                    
+                    // 计算到期日期
+                    const expiryDate = new Date();
+                    expiryDate.setDate(expiryDate.getDate() + keyDays);
+                    expiryDate.setHours(expiryDate.getHours() + keyHours);
+                    expiryDate.setMinutes(expiryDate.getMinutes() + keyMinutes);
+                    
+                    // 生成随机卡密
+                    const keys = [];
+                    for (let i = 0; i < count; i++) {
+                        const randomKey = generateRandomKey(length);
+                        keys.push({
+                            id: (Date.now() + i).toString(),
+                            key: randomKey,
+                            expiresAt: expiryDate.toISOString(),
+                            remainingUses: usageCount,
+                            totalUses: usageCount,
+                            status: 'active',
+                            createdAt: new Date().toISOString(),
+                            updatedAt: new Date().toISOString()
+                        });
+                    }
+                    
+                    // 保存到数据库
+                    keysDatabase.push(...keys);
+                    saveData();
                     
                     // 重新加载卡密列表
                     loadKeys();
                     loadDashboardStats();
                     
                     showMessage(`成功生成 ${count} 个随机卡密`, 'success');
-                } catch (error) {
-                    console.error('批量生成卡密失败:', error);
-                    showMessage('批量生成卡密失败: ' + error.message, 'error');
-                }
-            });
-            
-            // 查询卡密
-            searchKeyBtn.addEventListener('click', function() {
-                const searchKey = searchKeyInput.value.trim();
-                if (searchKey) {
-                    loadKeys(searchKey);
-                } else {
-                    loadKeys();
-                }
-            });
-            
-            // 导出卡密
-            exportKeysBtn.addEventListener('click', function() {
-                exportKeysToCSV();
-            });
-            
-            // 筛选状态变化
-            filterStatusSelect.addEventListener('change', function() {
-                loadKeys();
-            });
-            
-            // 删除已过期卡密
-            deleteExpiredBtn.addEventListener('click', async function() {
-                if (!confirm('确定要删除所有已过期卡密吗？此操作不可恢复！')) {
-                    return;
-                }
+                });
                 
-                try {
-                    const { error } = await supabase
-                        .from(TABLES.CARDS)
-                        .delete()
-                        .eq('status', KEY_STATUS.EXPIRED);
+                // 查询卡密
+                searchKeyBtn.addEventListener('click', function() {
+                    const searchKey = searchKeyInput.value.trim();
+                    if (searchKey) {
+                        loadKeys(searchKey);
+                    } else {
+                        loadKeys();
+                    }
+                });
+                
+                // 导出卡密
+                exportKeysBtn.addEventListener('click', function() {
+                    exportKeysToCSV();
+                });
+                
+                // 筛选状态变化
+                filterStatusSelect.addEventListener('change', function() {
+                    loadKeys();
+                });
+                
+                // 删除已过期卡密
+                deleteExpiredBtn.addEventListener('click', function() {
+                    if (!confirm('确定要删除所有已过期卡密吗？此操作不可恢复！')) {
+                        return;
+                    }
                     
-                    if (error) throw error;
+                    const now = new Date();
+                    const initialCount = keysDatabase.length;
+                    keysDatabase = keysDatabase.filter(key => {
+                        // 保留未过期或仍有使用次数的卡密
+                        return new Date(key.expiresAt) > now && key.remainingUses > 0;
+                    });
+                    
+                    saveData();
                     
                     loadKeys();
                     loadDashboardStats();
                     
-                    showMessage('已删除所有过期卡密', 'success');
-                } catch (error) {
-                    console.error('删除过期卡密失败:', error);
-                    showMessage('删除过期卡密失败: ' + error.message, 'error');
-                }
-            });
-            
-            // 清理已使用卡密
-            clearUsedBtn.addEventListener('click', async function() {
-                if (!confirm('确定要清理所有已使用卡密吗？此操作不可恢复！')) {
-                    return;
-                }
+                    const deletedCount = initialCount - keysDatabase.length;
+                    showMessage(`已删除 ${deletedCount} 个过期卡密`, 'success');
+                });
                 
-                try {
-                    const { error } = await supabase
-                        .from(TABLES.CARDS)
-                        .delete()
-                        .eq('status', KEY_STATUS.USED);
+                // 清理已使用卡密
+                clearUsedBtn.addEventListener('click', function() {
+                    if (!confirm('确定要清理所有已使用卡密吗？此操作不可恢复！')) {
+                        return;
+                    }
                     
-                    if (error) throw error;
+                    const initialCount = keysDatabase.length;
+                    keysDatabase = keysDatabase.filter(key => key.status !== 'used');
+                    saveData();
                     
                     loadKeys();
                     loadDashboardStats();
                     
-                    showMessage('已清理所有已使用卡密', 'success');
-                } catch (error) {
-                    console.error('清理已使用卡密失败:', error);
-                    showMessage('清理已使用卡密失败: ' + error.message, 'error');
-                }
-            });
-            
-            // 保存公告
-            saveAnnouncementBtn.addEventListener('click', async function() {
-                const content = announcementContent.value.trim();
+                    const deletedCount = initialCount - keysDatabase.length;
+                    showMessage(`已清理 ${deletedCount} 个已使用卡密`, 'success');
+                });
                 
-                if (!content) {
-                    showMessage('请输入公告内容', 'error');
-                    return;
-                }
-                
-                try {
-                    const { error } = await supabase
-                        .from(TABLES.ANNOUNCEMENTS)
-                        .insert([{
-                            content: content,
-                            created_at: new Date().toISOString()
-                        }]);
+                // 保存公告
+                saveAnnouncementBtn.addEventListener('click', function() {
+                    const content = announcementContent.value.trim();
                     
-                    if (error) throw error;
+                    if (!content) {
+                        showMessage('请输入公告内容', 'error');
+                        return;
+                    }
+                    
+                    announcementsDatabase = [{
+                        id: 1,
+                        content: content,
+                        createdAt: new Date().toISOString()
+                    }];
+                    saveData();
                     
                     showMessage('公告保存成功', 'success');
-                } catch (error) {
-                    console.error('保存公告失败:', error);
-                    showMessage('保存公告失败: ' + error.message, 'error');
-                }
-            });
-            
-            // 刷新统计
-            refreshStatsBtn.addEventListener('click', function() {
-                loadDashboardStats();
-                testDatabaseConnection();
-            });
-            
-            // 备份数据
-            backupDataBtn.addEventListener('click', function() {
-                exportKeysToCSV();
-            });
+                });
+                
+                // 刷新统计
+                refreshStatsBtn.addEventListener('click', function() {
+                    loadDashboardStats();
+                    showMessage('统计数据已刷新', 'success');
+                });
+                
+                // 备份数据
+                backupDataBtn.addEventListener('click', function() {
+                    exportKeysToCSV();
+                });
+                
+                // 密码输入框回车键事件
+                adminPassword.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        adminLoginBtn.click();
+                    }
+                });
+            }
             
             // 加载数据看板统计
-            async function loadDashboardStats() {
-                try {
-                    // 获取总卡密数
-                    const { count: totalCount, error: totalError } = await supabase
-                        .from(TABLES.CARDS)
-                        .select('*', { count: 'exact', head: true });
-                    
-                    if (totalError) throw totalError;
-                    
-                    // 获取可用卡密数
-                    const { count: activeCount, error: activeError } = await supabase
-                        .from(TABLES.CARDS)
-                        .select('*', { count: 'exact', head: true })
-                        .eq('status', KEY_STATUS.ACTIVE)
-                        .gte('expires_at', new Date().toISOString())
-                        .gt('remaining_uses', 0);
-                    
-                    if (activeError) throw activeError;
-                    
-                    // 获取已使用卡密数
-                    const { count: usedCount, error: usedError } = await supabase
-                        .from(TABLES.CARDS)
-                        .select('*', { count: 'exact', head: true })
-                        .eq('status', KEY_STATUS.USED);
-                    
-                    if (usedError) throw usedError;
-                    
-                    // 获取已过期卡密数
-                    const { count: expiredCount, error: expiredError } = await supabase
-                        .from(TABLES.CARDS)
-                        .select('*', { count: 'exact', head: true })
-                        .eq('status', KEY_STATUS.EXPIRED);
-                    
-                    if (expiredError) throw expiredError;
-                    
-                    // 更新显示
-                    totalKeysSpan.textContent = totalCount || 0;
-                    activeKeysSpan.textContent = activeCount || 0;
-                    usedKeysSpan.textContent = usedCount || 0;
-                    expiredKeysSpan.textContent = expiredCount || 0;
-                    
-                    // 更新最后更新时间
-                    lastUpdateSpan.textContent = new Date().toLocaleString();
-                    
-                    // 加载近期使用记录
-                    loadRecentUsage();
-                } catch (error) {
-                    console.error('加载统计数据失败:', error);
-                }
+            function loadDashboardStats() {
+                const now = new Date();
+                
+                // 计算各种状态的卡密数量
+                const totalKeys = keysDatabase.length;
+                const activeKeys = keysDatabase.filter(key => 
+                    key.status === 'active' && 
+                    new Date(key.expiresAt) > now && 
+                    key.remainingUses > 0
+                ).length;
+                const usedKeys = keysDatabase.filter(key => key.status === 'used').length;
+                const expiredKeys = keysDatabase.filter(key => 
+                    new Date(key.expiresAt) <= now || 
+                    (key.status === 'active' && key.remainingUses === 0)
+                ).length;
+                
+                // 更新显示
+                totalKeysSpan.textContent = totalKeys;
+                activeKeysSpan.textContent = activeKeys;
+                usedKeysSpan.textContent = usedKeys;
+                expiredKeysSpan.textContent = expiredKeys;
+                
+                // 更新最后更新时间
+                lastUpdateSpan.textContent = new Date().toLocaleString();
+                
+                // 加载近期使用记录
+                loadRecentUsage();
             }
             
             // 加载近期使用记录
-            async function loadRecentUsage() {
-                try {
-                    const { data, error } = await supabase
-                        .from(TABLES.USAGE_LOGS)
-                        .select(`
-                            *,
-                            cards:card_id (
-                                key
-                            )
-                        `)
-                        .order('used_at', { ascending: false })
-                        .limit(10);
-                    
-                    if (error) throw error;
-                    
-                    recentUsageContainer.innerHTML = '';
-                    
-                    if (data && data.length > 0) {
-                        data.forEach(log => {
+            function loadRecentUsage() {
+                recentUsageContainer.innerHTML = '';
+                
+                // 获取最近10条使用记录
+                const recentLogs = usageLogs.slice(-10).reverse();
+                
+                if (recentLogs.length > 0) {
+                    recentLogs.forEach(log => {
+                        const key = keysDatabase.find(k => k.id === log.keyId);
+                        if (key) {
                             const logItem = document.createElement('div');
                             logItem.className = 'key-item';
                             
@@ -1010,181 +1099,169 @@
                             
                             const logValue = document.createElement('div');
                             logValue.className = 'key-value';
-                            logValue.textContent = log.cards.key;
+                            logValue.textContent = key.key;
                             
                             const logDetails = document.createElement('div');
                             logDetails.className = 'key-details';
-                            logDetails.textContent = `使用时间: ${new Date(log.used_at).toLocaleString()}`;
+                            logDetails.textContent = `使用时间: ${new Date(log.usedAt).toLocaleString()}`;
                             
                             logInfo.appendChild(logValue);
                             logInfo.appendChild(logDetails);
                             logItem.appendChild(logInfo);
                             
                             recentUsageContainer.appendChild(logItem);
-                        });
-                    } else {
-                        recentUsageContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--gray);">暂无使用记录</div>';
-                    }
-                } catch (error) {
-                    console.error('加载使用记录失败:', error);
-                    recentUsageContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--error);">加载失败</div>';
+                        }
+                    });
+                } else {
+                    recentUsageContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--gray);">暂无使用记录</div>';
                 }
             }
             
             // 加载卡密列表
-            async function loadKeys(searchKey = '') {
-                try {
-                    let query = supabase
-                        .from(TABLES.CARDS)
-                        .select('*')
-                        .order('created_at', { ascending: false });
-                    
-                    // 应用搜索条件
-                    if (searchKey) {
-                        query = query.ilike('key', `%${searchKey}%`);
-                    }
-                    
-                    // 应用状态筛选
-                    const filterStatus = filterStatusSelect.value;
-                    if (filterStatus !== 'all') {
-                        query = query.eq('status', filterStatus);
-                    }
-                    
-                    const { data, error } = await query;
-                    
-                    if (error) throw error;
-                    
-                    keysContainer.innerHTML = '';
-                    
-                    if (data && data.length > 0) {
-                        data.forEach(key => {
-                            const keyItem = document.createElement('div');
-                            keyItem.className = 'key-item';
-                            
-                            const keyInfo = document.createElement('div');
-                            keyInfo.className = 'key-info';
-                            
-                            const keyValue = document.createElement('div');
-                            keyValue.className = 'key-value';
-                            keyValue.textContent = key.key;
-                            
-                            const keyDetails = document.createElement('div');
-                            keyDetails.className = 'key-details';
-                            keyDetails.innerHTML = `
-                                有效期: ${new Date(key.expires_at).toLocaleDateString()} | 
-                                剩余次数: ${key.remaining_uses}/${key.total_uses} | 
-                                状态: ${getStatusText(key.status)}
-                            `;
-                            
-                            keyInfo.appendChild(keyValue);
-                            keyInfo.appendChild(keyDetails);
-                            
-                            const keyActions = document.createElement('div');
-                            keyActions.className = 'key-actions';
-                            
-                            const deleteBtn = document.createElement('button');
-                            deleteBtn.className = 'delete-btn';
-                            deleteBtn.textContent = '删除';
-                            deleteBtn.addEventListener('click', function() {
-                                deleteKey(key.id);
-                            });
-                            
-                            keyActions.appendChild(deleteBtn);
-                            
-                            keyItem.appendChild(keyInfo);
-                            keyItem.appendChild(keyActions);
-                            
-                            keysContainer.appendChild(keyItem);
+            function loadKeys(searchKey = '') {
+                let filteredKeys = [...keysDatabase];
+                
+                // 应用搜索条件
+                if (searchKey) {
+                    filteredKeys = filteredKeys.filter(key => 
+                        key.key.toLowerCase().includes(searchKey.toLowerCase())
+                    );
+                }
+                
+                // 应用状态筛选
+                const filterStatus = filterStatusSelect.value;
+                if (filterStatus !== 'all') {
+                    filteredKeys = filteredKeys.filter(key => {
+                        if (filterStatus === 'active') {
+                            return key.status === 'active' && 
+                                   new Date(key.expiresAt) > new Date() && 
+                                   key.remainingUses > 0;
+                        } else if (filterStatus === 'used') {
+                            return key.status === 'used';
+                        } else if (filterStatus === 'expired') {
+                            return new Date(key.expiresAt) <= new Date() || 
+                                   (key.status === 'active' && key.remainingUses === 0);
+                        }
+                        return true;
+                    });
+                }
+                
+                // 按创建时间排序
+                filteredKeys.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                
+                keysContainer.innerHTML = '';
+                
+                if (filteredKeys.length > 0) {
+                    filteredKeys.forEach(key => {
+                        const keyItem = document.createElement('div');
+                        keyItem.className = 'key-item';
+                        
+                        const keyInfo = document.createElement('div');
+                        keyInfo.className = 'key-info';
+                        
+                        const keyValue = document.createElement('div');
+                        keyValue.className = 'key-value';
+                        keyValue.textContent = key.key;
+                        
+                        const keyDetails = document.createElement('div');
+                        keyDetails.className = 'key-details';
+                        
+                        // 计算剩余时间
+                        const now = new Date();
+                        const expiry = new Date(key.expiresAt);
+                        const diff = expiry - now;
+                        
+                        let statusText = '';
+                        if (key.status === 'used') {
+                            statusText = '已使用';
+                        } else if (diff <= 0 || key.remainingUses === 0) {
+                            statusText = '已过期';
+                        } else {
+                            const hours = Math.floor(diff / (1000 * 60 * 60));
+                            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                            statusText = `剩余: ${hours}小时 ${minutes}分钟`;
+                        }
+                        
+                        keyDetails.innerHTML = `
+                            有效期: ${new Date(key.expiresAt).toLocaleString()} | 
+                            剩余次数: ${key.remainingUses}/${key.totalUses} | 
+                            状态: ${getStatusText(key.status)} | 
+                            ${statusText}
+                        `;
+                        
+                        keyInfo.appendChild(keyValue);
+                        keyInfo.appendChild(keyDetails);
+                        
+                        const keyActions = document.createElement('div');
+                        keyActions.className = 'key-actions';
+                        
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.className = 'delete-btn';
+                        deleteBtn.textContent = '删除';
+                        deleteBtn.addEventListener('click', function() {
+                            deleteKey(key.id);
                         });
-                    } else {
-                        keysContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--gray);">暂无卡密</div>';
-                    }
-                } catch (error) {
-                    console.error('加载卡密列表失败:', error);
-                    keysContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--error);">加载失败</div>';
+                        
+                        keyActions.appendChild(deleteBtn);
+                        
+                        keyItem.appendChild(keyInfo);
+                        keyItem.appendChild(keyActions);
+                        
+                        keysContainer.appendChild(keyItem);
+                    });
+                } else {
+                    keysContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--gray);">暂无卡密</div>';
                 }
             }
             
             // 加载公告
-            async function loadAnnouncement() {
-                try {
-                    const { data, error } = await supabase
-                        .from(TABLES.ANNOUNCEMENTS)
-                        .select('*')
-                        .order('created_at', { ascending: false })
-                        .limit(1);
-                    
-                    if (error) throw error;
-                    
-                    if (data && data.length > 0) {
-                        announcementContent.value = data[0].content;
-                    }
-                } catch (error) {
-                    console.error('加载公告失败:', error);
+            function loadAnnouncement() {
+                if (announcementsDatabase.length > 0) {
+                    announcementContent.value = announcementsDatabase[0].content;
                 }
             }
             
             // 删除卡密
-            async function deleteKey(keyId) {
+            function deleteKey(keyId) {
                 if (!confirm('确定要删除这个卡密吗？此操作不可恢复！')) {
                     return;
                 }
                 
-                try {
-                    const { error } = await supabase
-                        .from(TABLES.CARDS)
-                        .delete()
-                        .eq('id', keyId);
-                    
-                    if (error) throw error;
-                    
-                    loadKeys();
-                    loadDashboardStats();
-                    
-                    showMessage('卡密删除成功', 'success');
-                } catch (error) {
-                    console.error('删除卡密失败:', error);
-                    showMessage('删除卡密失败: ' + error.message, 'error');
-                }
+                keysDatabase = keysDatabase.filter(key => key.id !== keyId);
+                saveData();
+                
+                loadKeys();
+                loadDashboardStats();
+                
+                showMessage('卡密删除成功', 'success');
             }
             
             // 导出卡密到CSV
-            async function exportKeysToCSV() {
-                try {
-                    const { data, error } = await supabase
-                        .from(TABLES.CARDS)
-                        .select('*');
-                    
-                    if (error) throw error;
-                    
-                    if (!data || data.length === 0) {
-                        showMessage('没有卡密数据可导出', 'error');
-                        return;
-                    }
-                    
-                    // 创建CSV内容
-                    let csvContent = '卡密,有效期,总次数,剩余次数,状态,创建时间\n';
-                    
-                    data.forEach(key => {
-                        csvContent += `"${key.key}","${new Date(key.expires_at).toLocaleDateString()}","${key.total_uses}","${key.remaining_uses}","${getStatusText(key.status)}","${new Date(key.created_at).toLocaleString()}"\n`;
-                    });
-                    
-                    // 创建下载链接
-                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                    const url = URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.setAttribute('href', url);
-                    link.setAttribute('download', `卡密备份_${new Date().toISOString().split('T')[0]}.csv`);
-                    link.style.visibility = 'hidden';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    
-                    showMessage('卡密数据导出成功', 'success');
-                } catch (error) {
-                    console.error('导出卡密失败:', error);
-                    showMessage('导出卡密失败: ' + error.message, 'error');
+            function exportKeysToCSV() {
+                if (keysDatabase.length === 0) {
+                    showMessage('没有卡密数据可导出', 'error');
+                    return;
                 }
+                
+                // 创建CSV内容
+                let csvContent = '卡密,有效期,总次数,剩余次数,状态,创建时间\n';
+                
+                keysDatabase.forEach(key => {
+                    csvContent += `"${key.key}","${new Date(key.expiresAt).toLocaleString()}","${key.totalUses}","${key.remainingUses}","${getStatusText(key.status)}","${new Date(key.createdAt).toLocaleString()}"\n`;
+                });
+                
+                // 创建下载链接
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.setAttribute('href', url);
+                link.setAttribute('download', `卡密备份_${new Date().toISOString().split('T')[0]}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                showMessage('卡密数据导出成功', 'success');
             }
             
             // 生成随机卡密
@@ -1200,9 +1277,9 @@
             // 获取状态文本
             function getStatusText(status) {
                 switch (status) {
-                    case KEY_STATUS.ACTIVE: return '可用';
-                    case KEY_STATUS.USED: return '已使用';
-                    case KEY_STATUS.EXPIRED: return '已过期';
+                    case 'active': return '可用';
+                    case 'used': return '已使用';
+                    case 'expired': return '已过期';
                     default: return '未知';
                 }
             }
