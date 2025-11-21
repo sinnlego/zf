@@ -592,6 +592,7 @@
                                 <option value="active">可用</option>
                                 <option value="used">已使用</option>
                                 <option value="expired">已过期</option>
+                                <option value="unused">未使用</option>
                             </select>
                         </div>
                         
@@ -736,6 +737,19 @@
                     announcementsDatabase = JSON.parse(localStorage.getItem('announcementsDatabase') || '[]');
                     usageLogs = JSON.parse(localStorage.getItem('usageLogs') || '[]');
                     
+                    // 迁移旧数据 - 确保每个卡密都有firstUsedAt字段
+                    let needsSave = false;
+                    keysDatabase.forEach(key => {
+                        if (!key.hasOwnProperty('firstUsedAt')) {
+                            key.firstUsedAt = null;
+                            needsSave = true;
+                        }
+                    });
+                    
+                    if (needsSave) {
+                        saveData();
+                    }
+                    
                     console.log('数据加载成功:', {
                         keys: keysDatabase.length,
                         announcements: announcementsDatabase.length,
@@ -868,20 +882,17 @@
                         return;
                     }
                     
-                    // 计算到期日期
-                    const expiryDate = new Date();
-                    expiryDate.setDate(expiryDate.getDate() + keyDays);
-                    expiryDate.setHours(expiryDate.getHours() + keyHours);
-                    expiryDate.setMinutes(expiryDate.getMinutes() + keyMinutes);
-                    
                     // 创建卡密对象
                     const key = {
                         id: Date.now().toString(),
                         key: keyValue,
-                        expiresAt: expiryDate.toISOString(),
+                        validityDays: keyDays,
+                        validityHours: keyHours,
+                        validityMinutes: keyMinutes,
                         remainingUses: usageCount,
                         totalUses: usageCount,
                         status: 'active',
+                        firstUsedAt: null, // 新增字段，记录首次使用时间
                         createdAt: new Date().toISOString(),
                         updatedAt: new Date().toISOString()
                     };
@@ -920,12 +931,6 @@
                     const keyMinutes = parseInt(keyMinutesInput.value);
                     const usageCount = parseInt(keyUsageCountInput.value);
                     
-                    // 计算到期日期
-                    const expiryDate = new Date();
-                    expiryDate.setDate(expiryDate.getDate() + keyDays);
-                    expiryDate.setHours(expiryDate.getHours() + keyHours);
-                    expiryDate.setMinutes(expiryDate.getMinutes() + keyMinutes);
-                    
                     // 生成随机卡密
                     const keys = [];
                     for (let i = 0; i < count; i++) {
@@ -933,10 +938,13 @@
                         keys.push({
                             id: (Date.now() + i).toString(),
                             key: randomKey,
-                            expiresAt: expiryDate.toISOString(),
+                            validityDays: keyDays,
+                            validityHours: keyHours,
+                            validityMinutes: keyMinutes,
                             remainingUses: usageCount,
                             totalUses: usageCount,
                             status: 'active',
+                            firstUsedAt: null, // 新增字段，记录首次使用时间
                             createdAt: new Date().toISOString(),
                             updatedAt: new Date().toISOString()
                         });
@@ -982,8 +990,9 @@
                     const now = new Date();
                     const initialCount = keysDatabase.length;
                     keysDatabase = keysDatabase.filter(key => {
-                        // 保留未过期或仍有使用次数的卡密
-                        return new Date(key.expiresAt) > now && key.remainingUses > 0;
+                        // 计算卡密状态
+                        const status = calculateKeyStatus(key);
+                        return status !== 'expired';
                     });
                     
                     saveData();
@@ -1002,7 +1011,10 @@
                     }
                     
                     const initialCount = keysDatabase.length;
-                    keysDatabase = keysDatabase.filter(key => key.status !== 'used');
+                    keysDatabase = keysDatabase.filter(key => {
+                        const status = calculateKeyStatus(key);
+                        return status !== 'used';
+                    });
                     saveData();
                     
                     loadKeys();
@@ -1050,22 +1062,95 @@
                 });
             }
             
+            // 计算卡密状态
+            function calculateKeyStatus(key) {
+                // 如果已使用次数为0，标记为已使用
+                if (key.remainingUses === 0) {
+                    return 'used';
+                }
+                
+                // 如果从未被使用过，则为未使用状态
+                if (key.firstUsedAt === null) {
+                    return 'unused';
+                }
+                
+                // 计算到期时间
+                const firstUsedDate = new Date(key.firstUsedAt);
+                const expiryDate = new Date(firstUsedDate);
+                expiryDate.setDate(expiryDate.getDate() + key.validityDays);
+                expiryDate.setHours(expiryDate.getHours() + key.validityHours);
+                expiryDate.setMinutes(expiryDate.getMinutes() + key.validityMinutes);
+                
+                // 检查是否过期
+                const now = new Date();
+                if (now > expiryDate) {
+                    return 'expired';
+                }
+                
+                return 'active';
+            }
+            
+            // 计算卡密剩余时间
+            function calculateRemainingTime(key) {
+                // 如果从未被使用过，返回完整有效期
+                if (key.firstUsedAt === null) {
+                    return {
+                        days: key.validityDays,
+                        hours: key.validityHours,
+                        minutes: key.validityMinutes,
+                        isUsed: false
+                    };
+                }
+                
+                // 计算到期时间
+                const firstUsedDate = new Date(key.firstUsedAt);
+                const expiryDate = new Date(firstUsedDate);
+                expiryDate.setDate(expiryDate.getDate() + key.validityDays);
+                expiryDate.setHours(expiryDate.getHours() + key.validityHours);
+                expiryDate.setMinutes(expiryDate.getMinutes() + key.validityMinutes);
+                
+                // 计算剩余时间
+                const now = new Date();
+                const diff = expiryDate - now;
+                
+                if (diff <= 0) {
+                    return {
+                        days: 0,
+                        hours: 0,
+                        minutes: 0,
+                        isUsed: true,
+                        isExpired: true
+                    };
+                }
+                
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                
+                return {
+                    days,
+                    hours,
+                    minutes,
+                    isUsed: true
+                };
+            }
+            
             // 加载数据看板统计
             function loadDashboardStats() {
                 const now = new Date();
                 
                 // 计算各种状态的卡密数量
                 const totalKeys = keysDatabase.length;
-                const activeKeys = keysDatabase.filter(key => 
-                    key.status === 'active' && 
-                    new Date(key.expiresAt) > now && 
-                    key.remainingUses > 0
-                ).length;
-                const usedKeys = keysDatabase.filter(key => key.status === 'used').length;
-                const expiredKeys = keysDatabase.filter(key => 
-                    new Date(key.expiresAt) <= now || 
-                    (key.status === 'active' && key.remainingUses === 0)
-                ).length;
+                let activeKeys = 0;
+                let usedKeys = 0;
+                let expiredKeys = 0;
+                
+                keysDatabase.forEach(key => {
+                    const status = calculateKeyStatus(key);
+                    if (status === 'active') activeKeys++;
+                    if (status === 'used') usedKeys++;
+                    if (status === 'expired') expiredKeys++;
+                });
                 
                 // 更新显示
                 totalKeysSpan.textContent = totalKeys;
@@ -1132,17 +1217,8 @@
                 const filterStatus = filterStatusSelect.value;
                 if (filterStatus !== 'all') {
                     filteredKeys = filteredKeys.filter(key => {
-                        if (filterStatus === 'active') {
-                            return key.status === 'active' && 
-                                   new Date(key.expiresAt) > new Date() && 
-                                   key.remainingUses > 0;
-                        } else if (filterStatus === 'used') {
-                            return key.status === 'used';
-                        } else if (filterStatus === 'expired') {
-                            return new Date(key.expiresAt) <= new Date() || 
-                                   (key.status === 'active' && key.remainingUses === 0);
-                        }
-                        return true;
+                        const status = calculateKeyStatus(key);
+                        return status === filterStatus;
                     });
                 }
                 
@@ -1166,27 +1242,35 @@
                         const keyDetails = document.createElement('div');
                         keyDetails.className = 'key-details';
                         
-                        // 计算剩余时间
-                        const now = new Date();
-                        const expiry = new Date(key.expiresAt);
-                        const diff = expiry - now;
+                        // 计算卡密状态
+                        const status = calculateKeyStatus(key);
+                        const remainingTime = calculateRemainingTime(key);
                         
                         let statusText = '';
-                        if (key.status === 'used') {
+                        if (status === 'used') {
                             statusText = '已使用';
-                        } else if (diff <= 0 || key.remainingUses === 0) {
+                        } else if (status === 'expired') {
                             statusText = '已过期';
+                        } else if (status === 'unused') {
+                            statusText = '未使用';
                         } else {
-                            const hours = Math.floor(diff / (1000 * 60 * 60));
-                            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                            statusText = `剩余: ${hours}小时 ${minutes}分钟`;
+                            statusText = '可用';
+                        }
+                        
+                        // 构建显示信息
+                        let timeInfo = '';
+                        if (status === 'unused') {
+                            timeInfo = `有效期: ${key.validityDays}天${key.validityHours}小时${key.validityMinutes}分钟`;
+                        } else if (status === 'active') {
+                            timeInfo = `剩余时间: ${remainingTime.days}天${remainingTime.hours}小时${remainingTime.minutes}分钟`;
+                        } else if (status === 'expired') {
+                            timeInfo = '已过期';
                         }
                         
                         keyDetails.innerHTML = `
-                            有效期: ${new Date(key.expiresAt).toLocaleString()} | 
+                            ${timeInfo} | 
                             剩余次数: ${key.remainingUses}/${key.totalUses} | 
-                            状态: ${getStatusText(key.status)} | 
-                            ${statusText}
+                            状态: ${statusText}
                         `;
                         
                         keyInfo.appendChild(keyValue);
@@ -1244,10 +1328,11 @@
                 }
                 
                 // 创建CSV内容
-                let csvContent = '卡密,有效期,总次数,剩余次数,状态,创建时间\n';
+                let csvContent = '卡密,有效期(天),有效期(小时),有效期(分钟),总次数,剩余次数,状态,创建时间\n';
                 
                 keysDatabase.forEach(key => {
-                    csvContent += `"${key.key}","${new Date(key.expiresAt).toLocaleString()}","${key.totalUses}","${key.remainingUses}","${getStatusText(key.status)}","${new Date(key.createdAt).toLocaleString()}"\n`;
+                    const status = calculateKeyStatus(key);
+                    csvContent += `"${key.key}","${key.validityDays}","${key.validityHours}","${key.validityMinutes}","${key.totalUses}","${key.remainingUses}","${status}","${new Date(key.createdAt).toLocaleString()}"\n`;
                 });
                 
                 // 创建下载链接
@@ -1274,16 +1359,6 @@
                 return result;
             }
             
-            // 获取状态文本
-            function getStatusText(status) {
-                switch (status) {
-                    case 'active': return '可用';
-                    case 'used': return '已使用';
-                    case 'expired': return '已过期';
-                    default: return '未知';
-                }
-            }
-            
             // 显示消息
             function showMessage(message, type) {
                 adminLoginMessage.textContent = message;
@@ -1300,4 +1375,4 @@
         });
     </script>
 </body>
-</html>
+    </html>
